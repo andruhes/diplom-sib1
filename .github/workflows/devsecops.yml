@@ -41,6 +41,7 @@ jobs:
   build:
     runs-on: self-hosted
     needs: sast
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
