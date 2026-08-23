@@ -1,0 +1,69 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Этап 1: Security Checks (секреты и зависимости)
+  security-checks:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for secrets (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Check dependencies (Trivy)
+        run: |
+          docker run --rm -v $(pwd):/app aquasec/trivy fs /app --scanners vuln,config,secret
+        continue-on-error: true
+
+  # Этап 2: SAST (статический анализ кода)
+  sast:
+    runs-on: self-hosted
+    needs: security-checks
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep SAST
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/security-audit p/owasp-top-ten
+        continue-on-error: true
+
+  # Этап 3: Сборка Docker образа
+  build:
+    runs-on: self-hosted
+    needs: sast
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t diplom-sib1:latest .
+
+  # Этап 4: DAST (динамический анализ)
+  dast:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run app with docker-compose
+        run: |
+          docker compose up -d
+          sleep 15
+
+      - name: Run OWASP ZAP baseline scan
+        run: |
+          docker run --rm -t --network="host" owasp/zap2docker-stable zap-baseline.py -t http://localhost:8080 || true
+
+      - name: Stop containers
+        run: |
+          docker compose down

@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: diplom-sib1-app
+    ports:
+      - "8080:80"
+    restart: unless-stopped
