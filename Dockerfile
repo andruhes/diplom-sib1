@@ -2,9 +2,9 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Копируем package.json и устанавливаем зависимости
+# Копируем package.json и устанавливаем ВСЕ зависимости (включая dev)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install
 
 # Копируем исходники и собираем сайт
 COPY . .
