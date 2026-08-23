@@ -1,15 +1,10 @@
-FROM node:18-alpine AS builder
-
-# Устанавливаем Python и build-зависимости
-RUN apk add --no-cache python3 make g++
+FROM node:18 AS builder
 
 WORKDIR /app
 
-# Копируем package.json и устанавливаем все зависимости
 COPY package*.json ./
 RUN npm install
 
-# Копируем исходники и собираем сайт
 COPY . .
 RUN npm run build
 
