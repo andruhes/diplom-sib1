@@ -1,21 +1,20 @@
 const htmlmin = require('html-minifier');
 const dateFns = require('date-fns');
-const lazyImagesPlugin = require('eleventy-plugin-lazyimages');
 const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPlugin(syntaxHighlight);
 
-  eleventyConfig.addPlugin(lazyImagesPlugin, {
-    transformImgPath: (imgPath) => {
-      if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
-        // Handle remote file
-        return imgPath;
-      } else {
-        return `./src/${imgPath}`;
-      }
-    },
-  });
+  // ОТКЛЮЧАЕМ ЛЕНИВУЮ ЗАГРУЗКУ
+  // eleventyConfig.addPlugin(lazyImagesPlugin, {
+  //   transformImgPath: (imgPath) => {
+  //     if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
+  //       return imgPath;
+  //     } else {
+  //       return `./src/${imgPath}`;
+  //     }
+  //   },
+  // });
 
   eleventyConfig.setEjsOptions({
     rmWhitespace: true,
